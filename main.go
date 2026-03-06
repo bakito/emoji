@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -19,12 +20,12 @@ const (
 	defaultEmojiURL = "https://emojidb.org"
 )
 
-// EmojiClient represents our scraper client
+// EmojiClient represents our scraper client.
 type EmojiClient struct {
 	BaseURL string
 }
 
-// NewClient initializes a new EmojiDB client
+// NewClient initializes a new EmojiDB client.
 func NewClient() *EmojiClient {
 	return &EmojiClient{
 		BaseURL: defaultEmojiURL,
@@ -36,16 +37,20 @@ func (c *EmojiClient) buildSearchURL(query string) string {
 	return fmt.Sprintf("%s/%s-emojis?utm_source=user_search", c.BaseURL, url.PathEscape(formattedQuery))
 }
 
-// Search queries EmojiDB and returns a list of emojis
+// Search queries EmojiDB and returns a list of emojis.
 func (c *EmojiClient) Search(query string) ([]string, error) {
 	searchURL := c.buildSearchURL(query)
-	resp, err := http.Get(searchURL)
+	req, err := http.NewRequestWithContext(context.Background(), http.MethodGet, searchURL, http.NoBody)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != 200 {
+	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("failed to fetch emojis: status %d", resp.StatusCode)
 	}
 
@@ -56,7 +61,7 @@ func (c *EmojiClient) Search(query string) ([]string, error) {
 
 	var emojis []string
 	// Targeting the specific structure: .emoji-ctn > .emoji
-	doc.Find(".emoji-ctn .emoji").Each(func(i int, s *goquery.Selection) {
+	doc.Find(".emoji-ctn .emoji").Each(func(_ int, s *goquery.Selection) {
 		if len(emojis) >= maxEmojis {
 			return
 		}
@@ -96,8 +101,8 @@ func renderEmojiTable(emojis []string) {
 		data = append(data, row)
 	}
 
-	table.Bulk(data)
-	table.Render()
+	_ = table.Bulk(data)
+	_ = table.Render()
 }
 
 func main() {
