@@ -3,7 +3,7 @@ module github.com/bakito/emoji-cli
 go 1.27.2
 
 require (
-	github.com/PuerkitoBio/goquery v1.12.0
+	github.com/PuerkitoBio/goquery v1.13.0
 	github.com/fatih/color v1.19.0
 	github.com/olekukonko/tablewriter v1.1.5
 )
