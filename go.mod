@@ -1,6 +1,6 @@
 module github.com/bakito/emoji-cli
 
-go 1.26.6
+go 1.27.2
 
 require (
 	github.com/PuerkitoBio/goquery v1.12.0
